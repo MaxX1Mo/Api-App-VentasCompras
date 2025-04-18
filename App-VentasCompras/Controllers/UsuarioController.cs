@@ -5,6 +5,7 @@ using App_VentasCompras.DTOs;
 using App_VentasCompras.Models;
 using App_VentasCompras.Utils;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 namespace App_VentasCompras.Controllers
 {
     [Route("api/[controller]")]
@@ -19,10 +20,7 @@ namespace App_VentasCompras.Controllers
             _context = context;
             _seguridad = seguridad;
         }
-    }
 
-
-    /*
         #region Listado
         [HttpGet]
         [Authorize(Roles = "Admin")]
@@ -30,7 +28,12 @@ namespace App_VentasCompras.Controllers
         public async Task<ActionResult<List<UsuarioDTO>>> Get()
         {
             var listaDTO = new List<UsuarioDTO>();
-            var listaDB = await _context.Usuarios.Include(c => c.Persona).ToListAsync();
+            var listaDB = await _context.Usuarios
+                .Include(c => c.Persona)
+                .Include(u => u.Ubicacion)
+                .Include(s => s.Status)
+                .Include(p => p.Productos)
+                .ToListAsync();
 
 
             foreach (var item in listaDB)
@@ -40,12 +43,24 @@ namespace App_VentasCompras.Controllers
                     IDUsuario = item.IDUsuario,
                     Email = item.Email,
                     Username = item.Username,
+                    Password = item.Password,
                     Rol = item.Rol,
-                    //Password = item.Password,
+
                     IDPersona = item.Persona.IDPersona,
                     Nombre = item.Persona.Nombre,
                     Apellido = item.Persona.Apellido,
                     NroCelular = item.Persona.NroCelular,
+
+                    Pais = item.Ubicacion.Pais,
+                    Localidad = item.Ubicacion.Localidad,
+                    Provincia = item.Ubicacion.Provincia,
+                    CodigoPostal = item.Ubicacion.CodigoPostal,
+                    Calle = item.Ubicacion.Calle,
+                    NroCalle = item.Ubicacion.Calle,
+                    VentasExitosas = item.Status.VentasExitosas,
+                    Bueno = item.Status.Valoracion.Bueno,
+                    Regular = item.Status.Valoracion.Regular,
+                    Malo = item.Status.Valoracion.Malo,
                 });
             }
             return Ok(listaDTO);
@@ -54,7 +69,7 @@ namespace App_VentasCompras.Controllers
 
         #region Buscar
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Usuario")]
         [Route("buscar/{id}")]
         public async Task<ActionResult<UsuarioDTO>> Get(int id)
         {
@@ -69,16 +84,33 @@ namespace App_VentasCompras.Controllers
             usuarioDTO.IDUsuario = id;
             usuarioDTO.Email = usuarioDB.Email;
             usuarioDTO.Username = usuarioDB.Username;
+            usuarioDTO.Password = usuarioDB.Password;
             usuarioDTO.Rol = usuarioDB.Rol;
-            //usuarioDTO.Password = usuarioDB.Password;
+
             usuarioDTO.IDPersona = usuarioDB.Persona.IDPersona;
             usuarioDTO.Nombre = usuarioDB.Persona.Nombre;
             usuarioDTO.Apellido = usuarioDB.Persona.Apellido;
             usuarioDTO.NroCelular = usuarioDB.Persona.NroCelular;
 
+            usuarioDTO.Pais = usuarioDB.Persona.Ubicacion.Pais;
+            usuarioDTO.Localidad = usuarioDB.Persona.Ubicacion.Localidad;
+            usuarioDTO.Provincia = usuarioDB.Persona.Ubicacion.Provincia;
+            usuarioDTO.CodigoPostal = usuarioDB.Persona.Ubicacion.CodigoPostal;
+            usuarioDTO.Calle = usuarioDB.Persona.Ubicacion.Calle;
+            usuarioDTO.NroCalle = usuarioDB.Persona.Ubicacion.NroCalle;
+
+            usuarioDTO.VentasExitosas = usuarioDB.Status.VentasExitosas;
+            usuarioDTO.Bueno = usuarioDB.Status.Valoracion.Bueno;
+            usuarioDTO.Malo = usuarioDB.Status.Valoracion.Malo;
+            usuarioDTO.Regular = usuarioDB.Status.Valoracion.Regular;
+
             return Ok(usuarioDTO);
         }
         #endregion
+    }
+
+
+    /*
 
         #region CREAR
         [HttpPost]

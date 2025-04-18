@@ -60,6 +60,46 @@ namespace App_VentasCompras.Controllers
         }
         #endregion
 
+        #region Lista de produc por usuario
+        [HttpGet]
+        [Authorize(Roles = "Admin,Usuario")]
+        [Route("lista")]
+        public async Task<ActionResult<List<ProductoDTO>>> Get(int id)
+        {
+            var listaDTO = new List<ProductoDTO>();
+            var listaDB = await _context.Productos
+                .Include(u => u.Usuario)
+                .Include(pv => pv.ProductoVenta)
+                .Include(c => c.Categoria)
+                .Where(u => u.IDUsuario == id)
+                .ToListAsync();
+
+
+            foreach (var item in listaDB)
+            {
+                listaDTO.Add(new ProductoDTO
+                {
+                    IDProducto = item.IDProducto,
+                    NombreProducto = item.NombreProducto,
+                    Descripcion = item.Descripcion,
+                    Precio = item.Precio,
+                    Imagen = item.Imagen,
+                    IDUsuario = item.Usuario.IDUsuario,
+                    Username = item.Usuario.Username,
+                    Email = item.Usuario.Email,
+                    NroCelular = item.Usuario.Persona.NroCelular,
+                    NombreCategoria = item.Categoria.Nombre,
+                    IDProductoVenta = item.ProductoVenta.IDProductoVenta,
+                    Fecha = item.ProductoVenta.Fecha,
+                    EstadoProducto = item.ProductoVenta.EstadoProducto,
+                    EstadoVenta = item.ProductoVenta.EstadoVenta,
+                    Cantidad = item.ProductoVenta.Cantidad,
+                });
+            }
+            return Ok(listaDTO);
+        }
+        #endregion
+
         #region Buscar
         [HttpGet]
         [Authorize(Roles = "Admin")]
@@ -96,9 +136,10 @@ namespace App_VentasCompras.Controllers
             return Ok(productoDTO);
         }
         #endregion
+
         #region Crear
          [HttpPost]
-        [Authorize(Roles = "Admin,Empleado")]
+        [Authorize(Roles = "Admin,Usuario")]
         [Route("crear")]
         public async Task<ActionResult<ProductoDTO>> Crear(ProductoDTO productoDTO)
         {
@@ -125,7 +166,70 @@ namespace App_VentasCompras.Controllers
             return Ok("Producto Creado");
         }
         #endregion
+
+        #region Editar
+        [HttpPut]
+        [Authorize(Roles = "Admin,Usuario")]
+        [Route("editar/{id}")]
+        public async Task<ActionResult<ProductoDTO>> Editar(int id, ProductoDTO productoDTO)
+        {
+            var productoDB = await _context.Productos
+                .Include(v => v.ProductoVenta)
+                .Where(p => p.IDProducto == id).FirstOrDefaultAsync();
+
+            if (productoDB == null)
+            {
+                return NotFound("Producto no encontrado.");
+            }
+
+
+            productoDB.NombreProducto = productoDTO.NombreProducto;
+            productoDB.Descripcion = productoDTO.Descripcion;
+            productoDB.Precio = productoDTO.Precio;
+            productoDB.Imagen = productoDTO.Imagen;
+
+            if (productoDB.ProductoVenta != null)
+            {
+                productoDB.ProductoVenta.EstadoProducto = productoDTO.EstadoProducto;
+                productoDB.ProductoVenta.EstadoVenta = productoDTO.EstadoVenta;
+                productoDB.ProductoVenta.Cantidad = productoDTO.Cantidad;
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok("Producto modificado");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al actualizar los datos: {ex.Message}");
+            }
+
+        }
+        #endregion
+
+        #region Eliminar
+        [HttpDelete]
+        [Authorize(Roles = "Admin,Usuario")]
+        [Route("eliminar/{id}")]
+        public async Task<ActionResult<ProductoDTO>> Eliminar(int id)
+        {
+            var productoDB = await _context.Productos.FindAsync(id);
+
+            if (productoDB is null)
+            {
+                return NotFound("Producto no encontrado");
+            }
+
+            _context.Productos.Remove(productoDB);
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Producto eliminado");
+        }
+        #endregion
         /*
+
        */
     }
 }
