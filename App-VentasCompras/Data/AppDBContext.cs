@@ -170,11 +170,11 @@ namespace App_VentasCompras.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Usuario y Ubicacion (1:1)
-            modelBuilder.Entity<Usuario>()
+            modelBuilder.Entity<Persona>()
              .HasOne(u => u.Ubicacion)
              .WithOne()
-             .HasForeignKey<Usuario>(u => u.IDUbicacion)
-             .OnDelete(DeleteBehavior.SetNull);  // Configuración opcional para manejar eliminación de ubicaciones
+             .HasForeignKey<Persona>(u => u.IDUbicacion)
+             .OnDelete(DeleteBehavior.Cascade); 
 
 
 

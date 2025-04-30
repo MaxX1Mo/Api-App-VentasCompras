@@ -6,12 +6,13 @@ using App_VentasCompras.Models;
 using App_VentasCompras.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 namespace App_VentasCompras.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class UsuarioController : ControllerBase
-    {        
+    {
         private readonly AppDBContext _context;
         private readonly Seguridad _seguridad;
 
@@ -24,14 +25,16 @@ namespace App_VentasCompras.Controllers
         #region Listado
         [HttpGet]
         [Authorize(Roles = "Admin")]
+        //[AllowAnonymous]
         [Route("lista")]
         public async Task<ActionResult<List<UsuarioDTO>>> Get()
         {
             var listaDTO = new List<UsuarioDTO>();
             var listaDB = await _context.Usuarios
-                .Include(c => c.Persona)
-                .Include(u => u.Ubicacion)
+                .Include(u => u.Persona)
+                   .ThenInclude(p => p.Ubicacion)
                 .Include(s => s.Status)
+                   .ThenInclude(u => u.Valoracion)
                 .Include(p => p.Productos)
                 .ToListAsync();
 
@@ -51,12 +54,13 @@ namespace App_VentasCompras.Controllers
                     Apellido = item.Persona.Apellido,
                     NroCelular = item.Persona.NroCelular,
 
-                    Pais = item.Ubicacion.Pais,
-                    Localidad = item.Ubicacion.Localidad,
-                    Provincia = item.Ubicacion.Provincia,
-                    CodigoPostal = item.Ubicacion.CodigoPostal,
-                    Calle = item.Ubicacion.Calle,
-                    NroCalle = item.Ubicacion.Calle,
+                    Pais = item.Persona.Ubicacion.Pais,
+                    Localidad = item.Persona.Ubicacion.Localidad,
+                    Provincia = item.Persona.Ubicacion.Provincia,
+                    CodigoPostal = item.Persona.Ubicacion.CodigoPostal,
+                    Calle = item.Persona.Ubicacion.Calle,
+                    NroCalle = item.Persona.Ubicacion.Calle,
+
                     VentasExitosas = item.Status.VentasExitosas,
                     Bueno = item.Status.Valoracion.Bueno,
                     Regular = item.Status.Valoracion.Regular,
@@ -70,11 +74,19 @@ namespace App_VentasCompras.Controllers
         #region Buscar
         [HttpGet]
         [Authorize(Roles = "Admin, Usuario")]
+        //[AllowAnonymous]
         [Route("buscar/{id}")]
         public async Task<ActionResult<UsuarioDTO>> Get(int id)
         {
             var usuarioDTO = new UsuarioDTO();
-            var usuarioDB = await _context.Usuarios.Include(u => u.Persona).Where(c => c.IDUsuario == id).FirstOrDefaultAsync();
+            var usuarioDB = await _context.Usuarios
+                .Include(u => u.Persona)
+                   .ThenInclude(p => p.Ubicacion)
+                .Include(s => s.Status)
+                   .ThenInclude(u => u.Valoracion)
+                .Include(p => p.Productos)
+                .Where(c => c.IDUsuario == id)
+                .FirstOrDefaultAsync();
 
             if (usuarioDB == null)
             {
@@ -107,57 +119,104 @@ namespace App_VentasCompras.Controllers
             return Ok(usuarioDTO);
         }
         #endregion
-    }
 
-
-    /*
 
         #region CREAR
         [HttpPost]
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin")]
+        //[AllowAnonymous]
         [Route("crear")]
         public async Task<ActionResult<UsuarioDTO>> Crear(UsuarioDTO usuarioDTO)
         {
-
+            var ubicacionDB = new Ubicacion
+            {
+                Pais = usuarioDTO.Pais,
+                Localidad = usuarioDTO.Localidad,
+                Provincia = usuarioDTO.Provincia,
+                CodigoPostal = usuarioDTO.CodigoPostal,
+                Calle = usuarioDTO.Calle,
+                NroCalle = usuarioDTO.NroCalle
+            };
             var personaDB = new Persona
             {
                 Nombre = usuarioDTO.Nombre,
                 Apellido = usuarioDTO.Apellido,
-                NroCelular = usuarioDTO.NroCelular
+                NroCelular = usuarioDTO.NroCelular,
+                Ubicacion = ubicacionDB
             };
+       
+            var valoracionDB = new Valoracion
+            {
+                Bueno = usuarioDTO.Bueno,
+                Malo = usuarioDTO.Malo,
+                Regular = usuarioDTO.Regular
+            };
+            var statusDB = new Status
+            {
+                VentasExitosas = usuarioDTO.VentasExitosas,
+                Valoracion = valoracionDB
+            };
+
             var usuarioDB = new Usuario
             {
                 Email = usuarioDTO.Email,
                 Username = usuarioDTO.Username,
                 Password = _seguridad.encriptarSHA256(usuarioDTO.Password),
                 Rol = usuarioDTO.Rol,
+                Status = statusDB,
                 Persona = personaDB
             };
+
 
             await _context.Usuarios.AddAsync(usuarioDB);
             await _context.SaveChangesAsync();
             return Ok("Usuario Creado");
         }
-
         #endregion
+
+
         #region CREAR para registro usuario
         [HttpPost]
         [AllowAnonymous]
         [Route("registro")]
         public async Task<ActionResult<UsuarioDTO>> Registro(UsuarioDTO usuarioDTO)
         {
+            var ubicacionDB = new Ubicacion
+            {
+                Pais = usuarioDTO.Pais,
+                Localidad = usuarioDTO.Localidad,
+                Provincia = usuarioDTO.Provincia,
+                CodigoPostal = usuarioDTO.CodigoPostal,
+                Calle = usuarioDTO.Calle,
+                NroCalle = usuarioDTO.NroCalle
+            };
             var personaDB = new Persona
             {
                 Nombre = usuarioDTO.Nombre,
                 Apellido = usuarioDTO.Apellido,
-                NroCelular = usuarioDTO.NroCelular
+                NroCelular = usuarioDTO.NroCelular,
+                Ubicacion = ubicacionDB
             };
+
+            var valoracionDB = new Valoracion
+            {
+                Bueno = usuarioDTO.Bueno,
+                Malo = usuarioDTO.Malo,
+                Regular = usuarioDTO.Regular
+            };
+            var statusDB = new Status
+            {
+                VentasExitosas = usuarioDTO.VentasExitosas,
+                Valoracion = valoracionDB
+            };
+
             var usuarioDB = new Usuario
             {
                 Email = usuarioDTO.Email,
                 Username = usuarioDTO.Username,
                 Password = _seguridad.encriptarSHA256(usuarioDTO.Password),
                 Rol = Roles.Usuario,
+                Status = statusDB,
                 Persona = personaDB
             };
 
@@ -167,15 +226,20 @@ namespace App_VentasCompras.Controllers
         }
         #endregion
 
+
         #region EDITAR
         [HttpPut]
         [Authorize(Roles = "Admin")]
+        //[AllowAnonymous]
         [Route("editar/{id}")]
         public async Task<ActionResult<UsuarioDTO>> Editar(int id, UsuarioDTO usuarioDTO)
         {
             var usuariodb = await _context.Usuarios
-                            .Include(u => u.Persona)
-                            .FirstOrDefaultAsync(u => u.IDUsuario == id);
+                .Include(u => u.Persona)
+                   .ThenInclude(p => p.Ubicacion)
+                .Include(s => s.Status)
+                   .ThenInclude(u => u.Valoracion)
+                .FirstOrDefaultAsync(u => u.IDUsuario == id);
 
             if (usuariodb == null)
             {
@@ -194,7 +258,16 @@ namespace App_VentasCompras.Controllers
                 usuariodb.Persona.Apellido = usuarioDTO.Apellido;
                 usuariodb.Persona.NroCelular = usuarioDTO.NroCelular;
             }
+            if (usuariodb.Persona.Ubicacion != null)
+            {
+                usuariodb.Persona.Ubicacion.Pais = usuarioDTO.Pais;
+                usuariodb.Persona.Ubicacion.Localidad = usuarioDTO.Localidad;
+                usuariodb.Persona.Ubicacion.Provincia = usuarioDTO.Provincia;
+                usuariodb.Persona.Ubicacion.CodigoPostal = usuarioDTO.CodigoPostal;
+                usuariodb.Persona.Ubicacion.Calle = usuarioDTO.Calle;
+                usuariodb.Persona.Ubicacion.NroCalle = usuarioDTO.NroCalle;
 
+            }
 
             try
             {
@@ -211,6 +284,7 @@ namespace App_VentasCompras.Controllers
         #region Eliminar
         [HttpDelete]
         [Authorize(Roles = "Admin")]
+        //[AllowAnonymous]
         [Route("eliminar/{id}")]
         public async Task<ActionResult<UsuarioDTO>> Eliminar(int id)
         {
@@ -228,6 +302,15 @@ namespace App_VentasCompras.Controllers
             return Ok("Usuario eliminado");
         }
         #endregion
+
     }
+
+
+
+
+
+    /*
+
+
     */
 }
