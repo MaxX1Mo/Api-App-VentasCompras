@@ -21,7 +21,7 @@
         public string? Calle { get; set; }
         public string? NroCalle { get; set; }
 
-        // la tabla status y valoraciones que corresponden al usuario, se crearan al crear al usuario, con datos null ya que es un usuario nuevo
+        // status y valoraciones que corresponden al usuario, se crearan al crear al usuario, con datos null ya que es un usuario nuevo
         public int? VentasExitosas { get; set; }
         public int? Bueno { get; set; }
         public int? Malo { get; set; }

@@ -25,7 +25,7 @@ namespace App_VentasCompras.Controllers
         [HttpGet]
         [Authorize(Roles = "Admin,Usuario")]
         //[AllowAnonymous]
-        [Route("ListaProductos")]
+        [Route("Lista")]
         public async Task<ActionResult<List<ProductoDTO>>> Get()
         {
             var listaDTO = new List<ProductoDTO>();
@@ -240,7 +240,7 @@ namespace App_VentasCompras.Controllers
         [HttpGet]
         [Authorize(Roles = "Admin,Usuario")]
         //[AllowAnonymous]
-        [Route("ProductosPorUsuario")]
+        [Route("ListaPorUsuario")]
         public async Task<ActionResult<List<ProductoDTO>>> GetListaPorUsuario(int id)
         {
             var listaDTO = new List<ProductoDTO>();
@@ -282,7 +282,7 @@ namespace App_VentasCompras.Controllers
         [HttpGet]
         [Authorize(Roles = "Admin,Usuario")]
         //[AllowAnonymous]
-        [Route("ProductosPorCategoria")]
+        [Route("ListaPorCategoria")]
         public async Task<ActionResult<List<ProductoDTO>>> GetListaPorCategoria(string categoria)
         {
             var listaDTO = new List<ProductoDTO>();
@@ -320,11 +320,11 @@ namespace App_VentasCompras.Controllers
         }
         #endregion
 
-        #region Buscar productos por nombre
+        #region Lista productos por nombre
         [HttpGet]
         [Authorize(Roles = "Admin,Usuario")]
         //[AllowAnonymous]
-        [Route("BuscarPorNombre")]
+        [Route("ListaPorNombre")]
         public async Task<ActionResult<List<ProductoDTO>>> BuscarPorNombre(string nombre)
         {
             var productos = await _context.Productos
@@ -362,11 +362,11 @@ namespace App_VentasCompras.Controllers
 
         #endregion
 
-        #region Buscar productos por ubicacion
+        #region Lista productos por ubicacion
         [HttpGet]
         [Authorize(Roles = "Admin,Usuario")]
         //[AllowAnonymous]
-        [Route("BuscarPorUbicacion")]
+        [Route("ListaPorUbicacion")]
         public async Task<ActionResult<List<ProductoDTO>>> BuscarPorUbicacion(string provincia, string localidad)
         {
             var listaDTO = new List<ProductoDTO>();

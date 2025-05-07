@@ -5,6 +5,7 @@ using App_VentasCompras.Data;
 using App_VentasCompras.Models;
 using Microsoft.AspNetCore.Authorization;
 using System;
+using App_VentasCompras.DTOs;
 
 namespace App_VentasCompras.Controllers
 {
@@ -22,26 +23,43 @@ namespace App_VentasCompras.Controllers
 
         #region Lista
         [HttpGet]
+        [Authorize(Roles = "Admin,Usuario")]
+        //[AllowAnonymous]
         [Route("lista")]
-        public async Task<ActionResult<IEnumerable<Categoria>>> GetCategorias()
+        public async Task<ActionResult<List<CategoriaDTO>>> Get()
         {
-            return await _context.Categorias.ToListAsync();
+            var listaDTO = new List<CategoriaDTO>();
+            var listaDB = await _context.Categorias.ToListAsync();
+
+
+            foreach (var item in listaDB)
+            {
+                listaDTO.Add(new CategoriaDTO
+                {
+                    IDCategoria = item.IDCategoria,
+                    Nombre = item.Nombre,
+                });
+            }
+            return Ok(listaDTO);
         }
         #endregion
 
         #region Buscar por ID
         [HttpGet]
+        [Authorize(Roles = "Admin,Usuario")]
         [Route("buscar/{id}")]
-        public async Task<ActionResult<Categoria>> GetCategoria(int id)
+        public async Task<ActionResult<CategoriaDTO>> Get(int id)
         {
-            var categoria = await _context.Categorias.FindAsync(id);
-
-            if (categoria == null)
+            var categoriaDTO = new CategoriaDTO();
+            var categoriaDB = await _context.Categorias.Where(c => c.IDCategoria == id).FirstOrDefaultAsync();
+            if (categoriaDB == null)
             {
                 return NotFound();
             }
+            categoriaDTO.IDCategoria = id;
+            categoriaDTO.Nombre = categoriaDB.Nombre;
 
-            return categoria;
+            return Ok(categoriaDTO);
         }
         #endregion
 
@@ -49,23 +67,28 @@ namespace App_VentasCompras.Controllers
         #region Crear
         [HttpPost]
         [Authorize(Roles = "Admin")]
+        //[AllowAnonymous]
         [Route("crear")]
-        public async Task<ActionResult<Categoria>> Crear(Categoria categoria)
+        public async Task<ActionResult<CategoriaDTO>> Crear(CategoriaDTO categoriaDTO)
         {
-            if (string.IsNullOrWhiteSpace(categoria.Nombre))
+            if (string.IsNullOrWhiteSpace(categoriaDTO.Nombre))
             {
                 return BadRequest("El nombre de la categoría es obligatorio.");
             }
 
             var categoriaExistente = await _context.Categorias
-                .FirstOrDefaultAsync(c => c.Nombre.ToLower() == categoria.Nombre.ToLower());
+                .FirstOrDefaultAsync(c => c.Nombre.ToLower() == categoriaDTO.Nombre.ToLower());
 
             if (categoriaExistente != null)
             {
                 return BadRequest("Ya existe una categoría con ese nombre.");
             }
 
-            _context.Categorias.Add(categoria);
+            var categoriaDB = new Categoria
+            {
+                Nombre = categoriaDTO.Nombre
+            };
+            await _context.Categorias.AddAsync(categoriaDB);
             await _context.SaveChangesAsync();
 
             return Ok("Categoría creada exitosamente.");
@@ -77,32 +100,21 @@ namespace App_VentasCompras.Controllers
         [HttpPut]
         [Authorize(Roles = "Admin")]
         [Route("editar/{id}")]
-        public async Task<IActionResult> Editar(int id, Categoria categoria)
+        public async Task<ActionResult<CategoriaDTO>> Editar(int id, CategoriaDTO categoriaDTO)
         {
-            if (id != categoria.IDCategoria)
+
+            var categoriaDB = await _context.Categorias
+                .Where(c => c.IDCategoria == id).FirstOrDefaultAsync();
+
+            if (categoriaDB == null)
             {
-                return BadRequest();
+                return NotFound("Categoria no encontrada.");
             }
 
-            _context.Entry(categoria).State = EntityState.Modified;
+            categoriaDB.Nombre = categoriaDTO.Nombre;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CategoriaExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            await _context.SaveChangesAsync();
+            return Ok("Categoria modificada");
         }
         #endregion
 
@@ -110,25 +122,23 @@ namespace App_VentasCompras.Controllers
         [HttpDelete]
         [Authorize(Roles = "Admin")]
         [Route("eliminar/{id}")]
-        public async Task<IActionResult> Eliminar(int id)
+        public async Task<ActionResult<CategoriaDTO>> Eliminar(int id)
         {
-            var categoria = await _context.Categorias.FindAsync(id);
-            if (categoria == null)
+            var categoriaDB = await _context.Categorias.FindAsync(id);
+
+            if (categoriaDB is null)
             {
-                return NotFound();
+                return NotFound("Categoria no encontrada");
             }
 
-            _context.Categorias.Remove(categoria);
+            _context.Categorias.Remove(categoriaDB);
+
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok("Categoria eliminada");
         }
         #endregion
 
-        private bool CategoriaExists(int id)
-        {
-            return _context.Categorias.Any(e => e.IDCategoria == id);
-        }
 
     }
 }
