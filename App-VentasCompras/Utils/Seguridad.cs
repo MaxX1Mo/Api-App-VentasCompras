@@ -50,7 +50,7 @@ namespace App_VentasCompras.Utils
             //Se configura el token JWT con los claims del usuario, una expiración de 10 minutos y las credenciales de firma.
             var jwtConfig = new JwtSecurityToken(
                 claims: userClaims,
-                expires: DateTime.UtcNow.AddMinutes(10),
+                expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: credentials
                 );
 
