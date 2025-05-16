@@ -89,9 +89,6 @@ namespace App_VentasCompras.Controllers
             productoDTO.Precio = productoDB.Precio;
             productoDTO.Imagen = productoDB.Imagen;
             productoDTO.IDUsuario = productoDB.Usuario.IDUsuario;
-            //productoDTO.Username = productoDB.Usuario.Username;
-            //productoDTO.Email = productoDB.Usuario.Email;
-            //productoDTO.NroCelular = productoDB.Usuario.Persona.NroCelular;
             productoDTO.NombreCategoria = productoDB.Categoria.Nombre;
             productoDTO.IDProductoVenta = productoDB.ProductoVenta.IDProductoVenta;
             productoDTO.Fecha = productoDB.ProductoVenta.Fecha;
