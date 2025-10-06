@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using App_VentasCompras.Data;
+﻿using App_VentasCompras.Data;
 using App_VentasCompras.DTOs;
 using App_VentasCompras.Models;
 using App_VentasCompras.Utils;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Configuration.UserSecrets;
 namespace App_VentasCompras.Controllers
 {
     [Route("api/[controller]")]
@@ -123,8 +124,8 @@ namespace App_VentasCompras.Controllers
 
         #region CREAR
         [HttpPost]
-        [Authorize(Roles = "Admin")]
-        //[AllowAnonymous]
+        //[Authorize(Roles = "Admin")]
+        [AllowAnonymous]
         [Route("crear")]
         public async Task<ActionResult<UsuarioDTO>> Crear(UsuarioDTO usuarioDTO)
         {
@@ -229,10 +230,10 @@ namespace App_VentasCompras.Controllers
 
         #region EDITAR
         [HttpPut]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Usuario")]
         //[AllowAnonymous]
         [Route("editar/{id}")]
-        public async Task<ActionResult<UsuarioDTO>> Editar(int id, UsuarioDTO usuarioDTO)
+        public async Task<ActionResult<UsuarioDTO>> Editar(int id, UsuarioEditarDTO usuarioDTO)
         {
             var usuariodb = await _context.Usuarios
                 .Include(u => u.Persona)
@@ -249,7 +250,14 @@ namespace App_VentasCompras.Controllers
 
             usuariodb.Email = usuarioDTO.Email;
             usuariodb.Username = usuarioDTO.Username;
-            usuariodb.Password = _seguridad.encriptarSHA256(usuarioDTO.Password);
+
+            if (!string.IsNullOrEmpty(usuarioDTO.Password))
+            {
+                usuariodb.Password = _seguridad.encriptarSHA256(usuarioDTO.Password);
+            }
+            else { 
+            }
+           // usuariodb.Password = _seguridad.encriptarSHA256(usuarioDTO.Password);
             usuariodb.Rol = usuarioDTO.Rol;
 
             if (usuariodb.Persona != null)
@@ -268,6 +276,17 @@ namespace App_VentasCompras.Controllers
                 usuariodb.Persona.Ubicacion.NroCalle = usuarioDTO.NroCalle;
 
             }
+            if(usuariodb.Status != null)
+            {
+                usuariodb.Status.VentasExitosas = usuarioDTO.VentasExitosas;
+            }
+            if(usuariodb.Status.Valoracion != null)
+            {
+                usuariodb.Status.Valoracion.Regular = usuarioDTO.Regular;
+                usuariodb.Status.Valoracion.Malo = usuarioDTO.Malo;
+                usuariodb.Status.Valoracion.Bueno = usuarioDTO.Bueno;
+
+            }
 
             try
             {
@@ -283,7 +302,7 @@ namespace App_VentasCompras.Controllers
 
         #region Eliminar
         [HttpDelete]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Usuario")]
         //[AllowAnonymous]
         [Route("eliminar/{id}")]
         public async Task<ActionResult<UsuarioDTO>> Eliminar(int id)
@@ -304,13 +323,4 @@ namespace App_VentasCompras.Controllers
         #endregion
 
     }
-
-
-
-
-
-    /*
-
-
-    */
 }

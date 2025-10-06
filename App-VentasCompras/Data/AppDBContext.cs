@@ -115,8 +115,8 @@ namespace App_VentasCompras.Data
                 .ValueGeneratedOnAdd();
 
                 tb.Property(u => u.CodigoPostal)
-                .HasMaxLength(50)
-                .IsRequired();
+                .HasMaxLength(50);
+
             });
 
             //Status

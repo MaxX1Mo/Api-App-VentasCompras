@@ -29,7 +29,7 @@ namespace App_VentasCompras.Controllers
         public async Task<ActionResult<List<ProductoDTO>>> Get()
         {
             var listaDTO = new List<ProductoDTO>();
-            var listaDB = await _context.Productos
+            var listaDB = await _context.Productos.OrderByDescending(p => p.ProductoVenta.Fecha) // ordenar por fecha mas reciente publicada
                 .Include(u => u.Usuario)
                 .Include(u => u.Usuario)
                    .ThenInclude(p => p.Persona)
@@ -235,8 +235,8 @@ namespace App_VentasCompras.Controllers
 
         #region Lista de productos por usuario
         [HttpGet]
-        [Authorize(Roles = "Admin,Usuario")]
-        //[AllowAnonymous]
+        //[Authorize(Roles = "Admin,Usuario")]
+        [AllowAnonymous]
         [Route("ListaPorUsuario")]
         public async Task<ActionResult<List<ProductoDTO>>> GetListaPorUsuario(int id)
         {
