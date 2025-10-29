@@ -15,9 +15,10 @@ namespace App_VentasCompras.Utils
         {
             _configuration = configuration;
         }
-
+        // encriptar el password del usuario
         public string encriptarSHA256(string texto)
         {
+            // Crear una instancia de SHA256
             using (SHA256 sha256Hash = SHA256.Create())
             {
                 // Computar el hash
@@ -25,15 +26,15 @@ namespace App_VentasCompras.Utils
 
                 // Convertir el array de bytes a string
                 StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++)
+                for (int i = 0; i < bytes.Length; i++) // recorre el array de bytes
                 {
-                    builder.Append(bytes[i].ToString("x2"));
+                    builder.Append(bytes[i].ToString("x2")); // convertir a hexadecimal
                 }
 
-                return builder.ToString();
+                return builder.ToString(); // devuelve el hash en formato hexadecimal
             }
         }
-
+        // genera el token JWT para el usuario
         public string generarJWT(Usuario usuario)
         {
             //crear la informacion del usuario para token 
@@ -47,10 +48,10 @@ namespace App_VentasCompras.Utils
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:key"]!));   // clave de seguridad simétrica a partir de una clave secreta almacenada en la configuración
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature); //  credenciales de firma usando el algoritmo HMAC con SHA256
 
-            //Se configura el token JWT con los claims del usuario, una expiración de 10 minutos y las credenciales de firma.
+            //Se configura el token JWT con los claims del usuario, una expiración de 30 minutos y las credenciales de firma.
             var jwtConfig = new JwtSecurityToken(
                 claims: userClaims,
-                expires: DateTime.UtcNow.AddMinutes(10),
+                expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: credentials
                 );
 

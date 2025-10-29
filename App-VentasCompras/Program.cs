@@ -52,7 +52,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("NewPolicy", app =>
     {
-        app.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        app.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod(); 
     });
 });
 

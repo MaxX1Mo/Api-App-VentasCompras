@@ -7,6 +7,9 @@
         public string Apellido { get; set; }
         public string NroCelular { get; set; }
 
+        public int IDUbicacion { get; set; }
+        public virtual Ubicacion Ubicacion { get; set; }
+
         public int IDUsuario { get; set; }
         public virtual Usuario Usuario { get; set; }
     }

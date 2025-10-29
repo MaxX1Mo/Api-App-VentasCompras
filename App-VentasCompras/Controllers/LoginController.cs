@@ -32,9 +32,9 @@ namespace App_VentasCompras.Controllers
                 .FirstOrDefaultAsync();
 
             if (usuario == null)
-                return StatusCode(StatusCodes.Status200OK, new { isSuccess = false, token = "" });
+                return StatusCode(StatusCodes.Status200OK, new { isSuccess = false, token = "" }); // usuario no existe o la contraseña es incorrecta
             else
-                return StatusCode(StatusCodes.Status200OK, new { isSuccess = true, token = _seguridad.generarJWT(usuario) });
+                return StatusCode(StatusCodes.Status200OK, new { isSuccess = true, token = _seguridad.generarJWT(usuario) }); // usuario existe y la contraseña es correcta
         }
     }
 }

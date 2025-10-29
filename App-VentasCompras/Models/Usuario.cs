@@ -13,8 +13,8 @@ namespace App_VentasCompras.Models
 
         public Roles Rol { get; set; }
 
-        public int IDUbicacion { get; set; }
-        public virtual Ubicacion Ubicacion { get; set; }
+        //public int IDUbicacion { get; set; }
+        //public virtual Ubicacion Ubicacion { get; set; }
 
         //el status es opcional porque puede no tener nada
         public virtual Status? Status { get; set; }

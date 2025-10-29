@@ -13,8 +13,8 @@
 
         public virtual ProductoVenta ProductoVenta { get; set; }
 
-        //id categoria es opcional
-        public int? IDCategoria { get; set; }
+        
+        public int IDCategoria { get; set; }
         public virtual Categoria? Categoria { get; set; }
     }
 }
