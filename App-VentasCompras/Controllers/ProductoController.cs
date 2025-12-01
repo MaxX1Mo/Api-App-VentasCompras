@@ -66,7 +66,7 @@ namespace App_VentasCompras.Controllers
 
         #region Buscar
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Usuario")]
         //[AllowAnonymous]
         [Route("buscar/{id}")]
         public async Task<ActionResult<ProductoDTO>> Buscar(int id)
@@ -235,8 +235,8 @@ namespace App_VentasCompras.Controllers
 
         #region Lista de productos por usuario
         [HttpGet]
-        //[Authorize(Roles = "Admin,Usuario")]
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin,Usuario")]
+        //[AllowAnonymous]
         [Route("ListaPorUsuario")]
         public async Task<ActionResult<List<ProductoDTO>>> GetListaPorUsuario(int id)
         {
