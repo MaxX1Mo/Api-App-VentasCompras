@@ -124,8 +124,8 @@ namespace App_VentasCompras.Controllers
 
         #region CREAR
         [HttpPost]
-        //[Authorize(Roles = "Admin")]
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin")]
+        //[AllowAnonymous]
         [Route("crear")]
         public async Task<ActionResult<UsuarioDTO>> Crear(UsuarioDTO usuarioDTO)
         {
