@@ -403,7 +403,50 @@ namespace App_VentasCompras.Controllers
             return Ok(listaDTO);
         }
         #endregion
+        
+        #region Lista productos por Provincia
+        [HttpGet]
+        [Authorize(Roles = "Admin,Usuario")]
+        //[AllowAnonymous]
+        [Route("ListaPorProvincia")]
+        public async Task<ActionResult<List<ProductoDTO>>> BuscarPorProvincia(string provincia)
+        {
+            var listaDTO = new List<ProductoDTO>();
 
+            var listaDB = await _context.Productos
+                .Include(p => p.Usuario)
+                    .ThenInclude(u => u.Persona)
+                        .ThenInclude(p => p.Ubicacion)
+                .Include(pv => pv.ProductoVenta)
+                .Include(c => c.Categoria)
+                .Where(p => p.Usuario.Persona.Ubicacion.Provincia == provincia)
+                .ToListAsync();
+
+            foreach (var item in listaDB)
+            {
+                listaDTO.Add(new ProductoDTO
+                {
+                    IDProducto = item.IDProducto,
+                    NombreProducto = item.NombreProducto,
+                    Descripcion = item.Descripcion,
+                    Precio = item.Precio,
+                    Imagen = item.Imagen,
+                    IDUsuario = item.Usuario.IDUsuario,
+                    Username = item.Usuario.Username,
+                    Email = item.Usuario.Email,
+                    NroCelular = item.Usuario.Persona.NroCelular,
+                    NombreCategoria = item.Categoria.Nombre,
+                    IDProductoVenta = item.ProductoVenta.IDProductoVenta,
+                    Fecha = item.ProductoVenta.Fecha,
+                    EstadoProducto = item.ProductoVenta.EstadoProducto,
+                    EstadoVenta = item.ProductoVenta.EstadoVenta,
+                    Cantidad = item.ProductoVenta.Cantidad,
+                });
+            }
+
+            return Ok(listaDTO);
+        }
+        #endregion
 
         /*
 
